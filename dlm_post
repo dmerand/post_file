@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# This variable represents the file passed from the command line
+FILE="$1"
+# Authentication token for posting to the site
+TOKEN="ba38a82e75d4faf026822455026df469"
+#URL="http://embed.donaldmerand.com/post_file.php"
+URL="http://localhost/post_file/post_file.php"
+
+# Display how to use the program
+usage() {
+  cat <<HOWTO
+post_file.sh
+
+Posts a file to embed.donaldmerand.com
+
+usage: \`post_file.sh <file_name>\`
+HOWTO
+}
+
+# If a file is not passed, then display usage and exit
+if [ ! -f "$FILE" ]; then
+  usage
+  exit 1
+fi
+
+# If we got to this point, we have a file to post. Send it up
+RESULT=$(curl -F file=@"$FILE" -F token="$TOKEN" "$URL")
+
+# Display the result on the command line
+echo "$RESULT"
+
+# Copy the result to the clipboard if a utility is available
+which pbcopy &>/dev/null && echo "$RESULT" | pbcopy
