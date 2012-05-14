@@ -4,8 +4,10 @@
 FILE="$1"
 # Authentication token for posting to the site
 TOKEN="ba38a82e75d4faf026822455026df469"
-#URL="http://embed.donaldmerand.com/post_file.php"
-URL="http://localhost/post_file/post_file.php"
+# Remote URL
+URL="http://embed.donaldmerand.com/post_file/post_file.php"
+# Local debugging
+#URL="http://localhost/post_file/post_file.php"
 
 # Display how to use the program
 usage() {
