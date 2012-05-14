@@ -47,13 +47,13 @@ if (empty($errors)) {
     # Recall that $type must be set for this block to execute
     
     # Make sure the image directory exists - test and make if empty
-    $dir_check = "[ -d '$result_path' ] || $(which mkdir) '$result_path'";
+    $dir_check = "[ -d '$result_path' ] || /bin/mkdir '$result_path'";
     system($dir_check, $mkdir_result);
     # Remember that shell commands exit 0 on success, so if we see a result there was a failure.
     if ($mkdir_result) { $errors[] = "Directory creation failed"; }
     
     # Now move the tmp file into it's permanent location
-    $move_cmd = "mv '$tmp_name' '$result_file_path'";
+    $move_cmd = "/bin/mv '$tmp_name' '$result_file_path'";
     system($move_cmd, $is_moved);
     if ($is_moved) { $errors[] = 'File move failed'; }
   } else {
