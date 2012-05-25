@@ -8,6 +8,7 @@ $server_protocol = "http";
 $request_method = $_SERVER['REQUEST_METHOD'];
 
 # Set an errors variable that we test against to see if we should move forward
+# _Any form validation should set the $errors variable_
 $errors = array();
 
 
@@ -36,8 +37,12 @@ if (!array_key_exists($token, $auth_tokens)) {
   $errors[] = "Auth failed";
 }
 
-# _Any form validation should happen here, and set the $errors variable_
 
+
+/*
+POST
+====
+*/
 # Page submitted, no errors - set local variables based on POST values
 if ($request_method == "POST" && empty($errors)) { 
 	# reads the name of the file the user submitted for uploading
@@ -75,19 +80,22 @@ if ($request_method == "POST" && empty($errors)) {
 }
 
 
-# DELETE posted, "dir" variable should be a directory
+/*
+DELETE
+======
+*/
+# "Dir" variable should be a directory
 if ($request_method == 'DELETE' && empty($dir)) {
   # You have to send a "dir" variable
   $errors[] = "DELETE requested, but no 'dir' provided";
 } elseif ($request_method == 'DELETE' && empty($errors)) {
-  $dir = stripslashes($dir);
-
   # Actually run the directory removal command
-  $rm_command = "[ -e $dir ] && /bin/rm -rf '$doc_root/$dir'";
+  $dir_path = "$doc_root/$dir";
+  $rm_command = "[ -e $dir_path ] && /bin/rm -rf '$dir_path'";
   system($rm_command, $rm_failed);
 
   # If there was a removal failure...
-  if ($rm_failed) { $errors[] = "Directory $dir/ could not be removed (may not exist)."; }
+  if ($rm_failed) { $errors[] = "$rm_failed: Directory creation failure"; }
 
   $result = "$dir removed.";
 }
@@ -97,7 +105,6 @@ if ($request_method == 'DELETE' && empty($dir)) {
 
 # OUTPUT HAPPENS BELOW
 # ====================
-
 
 # Return text not HTML
 Header('Content-type: text/plain');
