@@ -1,30 +1,42 @@
 <?php
 # _Author: Donald L. Merand_
 
+/*
+SETUP
+=====
+*/
+
 # Set some constants that we'll need later
-$server_name = $_SERVER['SERVER_NAME'];
 $doc_root = $_SERVER["DOCUMENT_ROOT"];
-$server_protocol = "http";
 $request_method = $_SERVER['REQUEST_METHOD'];
+$server_protocol = "http";
+$server_name = $_SERVER['SERVER_NAME'];
 
 # Set an errors variable that we test against to see if we should move forward
 # _Any form validation should set the $errors variable_
 $errors = array();
 
 
-# This is our awesome security system. Checking passed authentication tokens against a "database" of existing ones.
+/*
+AWESOME SECURITY
+================
+This is our awesome security system. Checking passed authentication tokens against a "database" of existing ones.
+
+Part II of the security system is to use basic HTTP auth. Unbreakable!
+*/
 switch($request_method)
 {
   case 'POST':
-    $token = $_POST['token']; 
+    $token = $_POST['token'];
     break;
 	case 'DELETE':
 		parse_str(file_get_contents('php://input'), $_DELETE);
     $token = $_DELETE['token']; 
-    $dir = $_DELETE['dir'];
+    $dir = escapeshellarg($_DELETE['dir']);
     break;
   default:
-    # This page only responds to POST + DELETE requests. Add an error if we're doing anything else
+    # This page only responds to POST + DELETE requests. 
+    # Add an error if we're doing anything else
     $errors[] = "Invalid HTTP request type: $request_method.";
 }
 
@@ -38,7 +50,6 @@ if (!array_key_exists($token, $auth_tokens)) {
 }
 
 
-
 /*
 POST
 ====
@@ -49,9 +60,6 @@ if ($request_method == "POST" && empty($errors)) {
 	$file_name=$_FILES['file']['name'];
 	# if it is not empty
 	if ($file_name)	{
-    # Un-quote passed filename
-		$file_name = stripslashes($file_name);
-    
     # `$_FILES['file']['tmp_name']` is the temporary filename of the file
     # in which the uploaded file was stored on the server
     $tmp_name = $_FILES['file']['tmp_name'];
@@ -89,22 +97,24 @@ if ($request_method == 'DELETE' && empty($dir)) {
   # You have to send a "dir" variable
   $errors[] = "DELETE requested, but no 'dir' provided";
 } elseif ($request_method == 'DELETE' && empty($errors)) {
-  # Actually run the directory removal command
   $dir_path = "$doc_root/$dir";
-  $rm_command = "[ -e $dir_path ] && /bin/rm -rf '$dir_path'";
+
+  # Actually run the directory removal command
+  $rm_command = "[ -d $dir_path ] && /bin/rm -rf '$dir_path'";
   system($rm_command, $rm_failed);
 
   # If there was a removal failure...
   if ($rm_failed) { $errors[] = "$rm_failed: Directory creation failure"; }
 
+  # If we didn't get errors above, we'll be using this result value
   $result = "$dir removed.";
 }
 
 
-
-
-# OUTPUT HAPPENS BELOW
-# ====================
+/*
+OUTPUT HAPPENS BELOW
+====================
+*/
 
 # Return text not HTML
 Header('Content-type: text/plain');
