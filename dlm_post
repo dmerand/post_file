@@ -15,6 +15,8 @@ TOKEN="ba38a82e75d4faf026822455026df469"
 URL="http://embed.donaldmerand.com/post_file/post_file.php"
 # Local debugging
 #URL="http://localhost/post_file/post_file.php"
+USER="postmaster"
+PASS="senditup"
 
 # Display how to use the program
 usage() {
@@ -39,10 +41,10 @@ fi
 
 # If we got to this point, we either have a file to post, or a file to delete. Send it up
 if [ $DELETE = 0 ]; then
-  RESULT=$(curl -sF file=@"$FILE" -F token="$TOKEN" "$URL")
+  RESULT=$(curl -u "$USER:$PASS" -sF file=@"$FILE" -F token="$TOKEN" "$URL")
 else
   #delete
-  RESULT=$(curl -sX DELETE -d dir="$FILE" -d token="$TOKEN" "$URL")
+  RESULT=$(curl -u "$USER:$PASS" -sX DELETE -d dir="$FILE" -d token="$TOKEN" "$URL")
 fi
 
 # Display the result on the command line
