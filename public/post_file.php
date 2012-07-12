@@ -29,8 +29,8 @@ switch($request_method)
   case 'POST':
     $token = $_POST['token'];
     break;
-	case 'DELETE':
-		parse_str(file_get_contents('php://input'), $_DELETE);
+  case 'DELETE':
+  parse_str(file_get_contents('php://input'), $_DELETE);
     $token = $_DELETE['token']; 
     $dir = escapeshellarg($_DELETE['dir']);
     break;
@@ -56,34 +56,39 @@ POST
 */
 # Page submitted, no errors - set local variables based on POST values
 if ($request_method == "POST" && empty($errors)) { 
-	# reads the name of the file the user submitted for uploading
-	$file_name=$_FILES['file']['name'];
-	# if it is not empty
-	if ($file_name)	{
-    # `$_FILES['file']['tmp_name']` is the temporary filename of the file
-    # in which the uploaded file was stored on the server
-    $tmp_name = $_FILES['file']['tmp_name'];
 
-    # We're going to store the files in a unique directory, in this case named after a UNIX epoch timestamp.
+  # reads the name of the file the user submitted for uploading
+  $file_name=$_FILES['file']['name'];
+  # if it is not empty
+  # `$_FILES['file']['tmp_name']` is the temporary filename of the file
+  # in which the uploaded file was stored on the server
+  $tmp_name = $_FILES['file']['tmp_name'];
+  $file_error = $_FILES['file']['error'];
+
+  if ($file_name && $tmp_name)  {
+
+	# We're going to store the files in a unique directory, in this case named
+	# after a UNIX epoch timestamp.
     $result_dir = time();
     $result_path="$doc_root/$result_dir"; 
     $result_file_path="$result_path/$file_name";
     # Recall that $type must be set for this block to execute
     
     # Make sure the image directory exists - test and make if empty
-    $dir_check = "[ -d '$result_path' ] || /bin/mkdir '$result_path'";
-    system($dir_check, $mkdir_result);
+    $dir_check = mkdir($result_path);
     # Remember that shell commands exit 0 on success, so if we see a result there was a failure.
-    if ($mkdir_result) { $errors[] = "Directory creation failed"; }
+    if (!$dir_check) { $errors[] = "Directory creation failed"; }
     
     # Now move the tmp file into it's permanent location
-    $move_cmd = "/bin/mv '$tmp_name' '$result_file_path'";
-    system($move_cmd, $is_moved);
-    if ($is_moved) { $errors[] = 'File move failed'; }
+	$is_moved = move_uploaded_file($tmp_name, $result_file_path);
+    if (!$is_moved) { 
+      $errors[] = "File move failed: " . var_export($FILES, true); 
+	  unset($result_path);
+	}
 
     $result = "$server_protocol://$server_name/$result_dir/$file_name posted.";
   } else {
-    $errors[] = "No valid file name.";
+    $errors[] = "No valid file name: $file_error";
   }
 }
 
