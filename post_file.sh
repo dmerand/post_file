@@ -41,10 +41,10 @@ fi
 
 # If we got to this point, we either have a file to post, or a file to delete. Send it up
 if [ $DELETE = 0 ]; then
-  RESULT=$(curl -u "$USER:$PASS" -sF file=@"$FILE" -F token="$TOKEN" "$URL")
+  RESULT=$(curl -u "$USER:$PASS" -F file=@"$FILE" -F token="$TOKEN" "$URL")
 else
   #delete
-  RESULT=$(curl -u "$USER:$PASS" -sX DELETE -d dir="$FILE" -d token="$TOKEN" "$URL")
+  RESULT=$(curl -u "$USER:$PASS" -X DELETE -d dir="$FILE" -d token="$TOKEN" "$URL")
 fi
 
 # Display the result on the command line
